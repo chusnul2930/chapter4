@@ -1,7 +1,7 @@
 package bej.challenge.chapter4.controller;
 
-import bej.challenge.chapter4.model.Users;
-import bej.challenge.chapter4.repository.UsersRepository;
+import bej.challenge.chapter4.model.GenreFilm;
+import bej.challenge.chapter4.repository.GenreFilmRepository;
 import bej.challenge.chapter4.service.SortAscDesc;
 import bej.challenge.chapter4.utils.MessageModel;
 import bej.challenge.chapter4.utils.MessageModelPagination;
@@ -20,43 +20,40 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users")
-public class UsersController {
+@RequestMapping("/genreFilm")
+public class GenreFilmController {
     @Autowired
-    private UsersRepository usersRepository;
+    private GenreFilmRepository genreFilmRepository;
 
     @Autowired
     private SortAscDesc sortAscDesc;
 
-    // Insert Data users
+    // Insert Data genre_film
     @PostMapping("/create")
-    public ResponseEntity<MessageModel> insertData(@RequestBody List<Users> param) {
+    public ResponseEntity<MessageModel> insertData(@RequestBody List<GenreFilm> param) {
         MessageModel msg = new MessageModel();
         try {
-            List<Users> usersList = new ArrayList<>();
-            for (Users data : param) {
-                Users users = new Users();
+            List<GenreFilm> genreFilmList = new ArrayList<>();
+            for (GenreFilm data : param) {
+                GenreFilm genreFilm = new GenreFilm();
                 String uuid = UUID.randomUUID().toString();
 
-                users.setUserId(uuid);
-                users.setEmail(data.getEmail());
-                users.setNoTelp(data.getNoTelp());
-                users.setUsername(data.getUsername());
-                users.setPassword(data.getPassword());
-                users.setLevelUser(data.getLevelUser());
-                users.setCreated(new Date());
-                users.setCreatedBy(data.getCreatedBy());
-                users.setUpdated(new Date());
-                users.setUpdatedBy("SYSTEM");
-                users.setIsactive("Y");
+                genreFilm.setGenreId(uuid);
+                genreFilm.setKode(data.getKode());
+                genreFilm.setNama(data.getNama());
+                genreFilm.setCreated(new Date());
+                genreFilm.setCreatedBy(data.getCreatedBy());
+                genreFilm.setUpdated(new Date());
+                genreFilm.setUpdatedBy("SYSTEM");
+                genreFilm.setIsactive("Y");
 
-                usersList.add(users);
+                genreFilmList.add(genreFilm);
             }
-            usersRepository.saveAll(usersList);
+            genreFilmRepository.saveAll(genreFilmList);
 
             msg.setStatus(true);
             msg.setMessage("Success to inserted data..");
-            msg.setData(usersList);
+            msg.setData(genreFilmList);
 
             return ResponseEntity.status(HttpStatus.OK).body(msg);
         } catch (Exception e) {
@@ -66,31 +63,28 @@ public class UsersController {
         }
     }
 
-    // Update Data users
+    // Update Data genre_film
     @PutMapping("/update")
-    public ResponseEntity<MessageModel> updateData(@RequestBody List<Users> param) {
+    public ResponseEntity<MessageModel> updateData(@RequestBody List<GenreFilm> param) {
         MessageModel msg = new MessageModel();
         try {
-            List<Users> usersList = new ArrayList<>();
-            for (Users data : param) {
-                Users users = usersRepository.getById(data.getUserId());
+            List<GenreFilm> genreFilmList = new ArrayList<>();
+            for (GenreFilm data : param) {
+                GenreFilm genreFilm = genreFilmRepository.getById(data.getGenreId());
 
-                users.setEmail(data.getEmail());
-                users.setNoTelp(data.getNoTelp());
-                users.setUsername(data.getUsername());
-                users.setPassword(data.getPassword());
-                users.setLevelUser(data.getLevelUser());
-                users.setUpdated(new Date());
-                users.setUpdatedBy(data.getUpdatedBy());
-                users.setIsactive(data.getIsactive());
+                genreFilm.setKode(data.getKode());
+                genreFilm.setNama(data.getNama());
+                genreFilm.setUpdated(new Date());
+                genreFilm.setUpdatedBy(data.getUpdatedBy());
+                genreFilm.setIsactive(data.getIsactive());
 
-                usersList.add(users);
+                genreFilmList.add(genreFilm);
             }
-            usersRepository.saveAll(usersList);
+            genreFilmRepository.saveAll(genreFilmList);
 
             msg.setStatus(true);
             msg.setMessage("Success to updated data..");
-            msg.setData(usersList);
+            msg.setData(genreFilmList);
 
             return ResponseEntity.status(HttpStatus.OK).body(msg);
         } catch (Exception e) {
@@ -100,12 +94,12 @@ public class UsersController {
         }
     }
 
-    // Delete data users By user_id
-    @DeleteMapping("/delete/{userId}")
-    public ResponseEntity<MessageModel> deleteById(@PathVariable("userId") String userId) {
+    // Delete Data genre_film By genre_id
+    @DeleteMapping("/delete/{genreId}")
+    public ResponseEntity<MessageModel> deleteById(@PathVariable("genreId") String genreId) {
         MessageModel msg = new MessageModel();
         try {
-            usersRepository.deleteById(userId);
+            genreFilmRepository.deleteById(genreId);
 
             msg.setStatus(true);
             msg.setMessage("Success to deleted data..");
@@ -117,12 +111,12 @@ public class UsersController {
         }
     }
 
-    // Get Data users By user_id
-    @GetMapping("/getData/{userId}")
-    public ResponseEntity<MessageModel> getById(@PathVariable("userId") String userId) {
+    // Get Data genre_film By genre_id
+    @GetMapping("/getData/{genreId}")
+    public ResponseEntity<MessageModel> getById(@PathVariable("genreId") String genreId) {
         MessageModel msg = new MessageModel();
         try {
-            Users data = usersRepository.getById(userId);
+            GenreFilm data = genreFilmRepository.getById(genreId);
 
             msg.setStatus(true);
             msg.setMessage("Success to get data..");
@@ -136,15 +130,15 @@ public class UsersController {
         }
     }
 
-    // Get List All Data users
+    // Get List Data genre_film
     @GetMapping("/getList")
     public ResponseEntity<MessageModel> getListData() {
         MessageModel msg = new MessageModel();
         try {
-            List<Users> data = (List<Users>) usersRepository.findAll();
+            List<GenreFilm> data = (List<GenreFilm>) genreFilmRepository.findAll();
 
             msg.setStatus(true);
-            msg.setMessage("Success to get all data..");
+            msg.setMessage("Success");
             msg.setData(data);
 
             return ResponseEntity.status(HttpStatus.OK).body(msg);
@@ -155,7 +149,7 @@ public class UsersController {
         }
     }
 
-    // Get Data Pagination From users
+    // Get Data Pagination From genre_film
     @GetMapping("/getPagination")
     public ResponseEntity<MessageModelPagination> getDataPagination(@RequestParam(value = "page",defaultValue = "0") Integer page,
                                                                     @RequestParam(value = "size",defaultValue = "10") Integer size,
@@ -166,7 +160,7 @@ public class UsersController {
             Sort objSort = sortAscDesc.getSortingData(sort,urutan);
             Pageable pageRequest = objSort == null ? PageRequest.of(page, size) : PageRequest.of(page, size,objSort);
 
-            Page<Users> data = usersRepository.findAll(pageRequest);
+            Page<GenreFilm> data = genreFilmRepository.findAll(pageRequest);
 
             msg.setStatus(true);
             msg.setMessage("Success");
