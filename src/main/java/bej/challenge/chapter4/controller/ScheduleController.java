@@ -1,7 +1,7 @@
 package bej.challenge.chapter4.controller;
 
-import bej.challenge.chapter4.model.Films;
-import bej.challenge.chapter4.repository.FilmsRepository;
+import bej.challenge.chapter4.model.Schedule;
+import bej.challenge.chapter4.repository.ScheduleRepository;
 import bej.challenge.chapter4.service.SortAscDesc;
 import bej.challenge.chapter4.utils.MessageModel;
 import bej.challenge.chapter4.utils.MessageModelPagination;
@@ -20,43 +20,45 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/films")
-public class FilmsController {
+@RequestMapping("/schedule")
+public class ScheduleController {
     @Autowired
-    private FilmsRepository filmsRepository;
+    private ScheduleRepository scheduleRepository;
 
     @Autowired
     private SortAscDesc sortAscDesc;
 
-    // Insert Data films
+    // Insert Data schedule
     @PostMapping("/create")
-    public ResponseEntity<MessageModel> insertData(@RequestBody List<Films> param) {
+    public ResponseEntity<MessageModel> insertData(@RequestBody List<Schedule> param) {
         MessageModel msg = new MessageModel();
         try {
-            List<Films> filmsList = new ArrayList<>();
-            for (Films data : param) {
-                Films films = new Films();
+            List<Schedule> scheduleList = new ArrayList<>();
+            for (Schedule data : param) {
+                Schedule schedule = new Schedule();
                 String uuid = UUID.randomUUID().toString();
 
-                films.setFilmId(uuid);
-                films.setGenreId(data.getGenreId());
-                films.setKode(data.getKode());
-                films.setJudul(data.getJudul());
-                films.setKategori(data.getKategori());
-                films.setDesc(data.getDesc());
-                films.setCreated(new Date());
-                films.setCreatedBy(data.getCreatedBy());
-                films.setUpdated(new Date());
-                films.setUpdatedBy("SYSTEM");
-                films.setIsactive("Y");
+                schedule.setScheduleId(uuid);
+                schedule.setFilmId(data.getFilmId());
+                schedule.setStudioId(data.getStudioId());
+                schedule.setHrgTiket(data.getHrgTiket());
+                schedule.setTglTayang(data.getTglTayang());
+                schedule.setJamMulai(data.getJamMulai());
+                schedule.setJamSelesai(data.getJamSelesai());
+                schedule.setDesc(data.getDesc());
+                schedule.setCreated(new Date());
+                schedule.setCreatedBy(data.getCreatedBy());
+                schedule.setUpdated(new Date());
+                schedule.setUpdatedBy("SYSTEM");
+                schedule.setIsactive("Y");
 
-                filmsList.add(films);
+                scheduleList.add(schedule);
             }
-            filmsRepository.saveAll(filmsList);
+            scheduleRepository.saveAll(scheduleList);
 
             msg.setStatus(true);
             msg.setMessage("Success to inserted data..");
-            msg.setData(filmsList);
+            msg.setData(scheduleList);
 
             return ResponseEntity.status(HttpStatus.OK).body(msg);
         } catch (Exception e) {
@@ -66,31 +68,33 @@ public class FilmsController {
         }
     }
 
-    // Update Data films
+    // Update Data schedule
     @PutMapping("/update")
-    public ResponseEntity<MessageModel> updateData(@RequestBody List<Films> param) {
+    public ResponseEntity<MessageModel> updateData(@RequestBody List<Schedule> param) {
         MessageModel msg = new MessageModel();
         try {
-            List<Films> filmsList = new ArrayList<>();
-            for (Films data : param) {
-                Films films = filmsRepository.getById(data.getFilmId());
+            List<Schedule> scheduleList = new ArrayList<>();
+            for (Schedule data : param) {
+                Schedule schedule = scheduleRepository.getById(data.getScheduleId());
 
-                films.setGenreId(data.getGenreId());
-                films.setKode(data.getKode());
-                films.setJudul(data.getJudul());
-                films.setKategori(data.getKategori());
-                films.setDesc(data.getDesc());
-                films.setUpdated(new Date());
-                films.setUpdatedBy(data.getUpdatedBy());
-                films.setIsactive(data.getIsactive());
+                schedule.setFilmId(data.getFilmId());
+                schedule.setStudioId(data.getStudioId());
+                schedule.setHrgTiket(data.getHrgTiket());
+                schedule.setTglTayang(data.getTglTayang());
+                schedule.setJamMulai(data.getJamMulai());
+                schedule.setJamSelesai(data.getJamSelesai());
+                schedule.setDesc(data.getDesc());
+                schedule.setUpdated(new Date());
+                schedule.setUpdatedBy(data.getUpdatedBy());
+                schedule.setIsactive(data.getIsactive());
 
-                filmsList.add(films);
+                scheduleList.add(schedule);
             }
-            filmsRepository.saveAll(filmsList);
+            scheduleRepository.saveAll(scheduleList);
 
             msg.setStatus(true);
             msg.setMessage("Success to updated data..");
-            msg.setData(filmsList);
+            msg.setData(scheduleList);
 
             return ResponseEntity.status(HttpStatus.OK).body(msg);
         } catch (Exception e) {
@@ -100,12 +104,12 @@ public class FilmsController {
         }
     }
 
-    // Delete data films By film_id
-    @DeleteMapping("/delete/{filmId}")
-    public ResponseEntity<MessageModel> deleteById(@PathVariable("filmId") String filmId) {
+    // Delete data schedule By schedule_id
+    @DeleteMapping("/delete/{scheduleId}")
+    public ResponseEntity<MessageModel> deleteById(@PathVariable("scheduleId") String scheduleId) {
         MessageModel msg = new MessageModel();
         try {
-            filmsRepository.deleteById(filmId);
+            scheduleRepository.deleteById(scheduleId);
 
             msg.setStatus(true);
             msg.setMessage("Success to deleted data..");
@@ -117,12 +121,12 @@ public class FilmsController {
         }
     }
 
-    // Get Data films By film_id
-    @GetMapping("/getData/{filmId}")
-    public ResponseEntity<MessageModel> detById(@PathVariable("filmId") String filmId) {
+    // Get Data schedule By schedule_id
+    @GetMapping("/getData/{scheduleId}")
+    public ResponseEntity<MessageModel> detById(@PathVariable("scheduleId") String scheduleId) {
         MessageModel msg = new MessageModel();
         try {
-            Films data = filmsRepository.getById(filmId);
+            Schedule data = scheduleRepository.getById(scheduleId);
 
             msg.setStatus(true);
             msg.setMessage("Success to get data..");
@@ -136,12 +140,12 @@ public class FilmsController {
         }
     }
 
-    // Get List All Data films
+    // Get List All Data schedule
     @GetMapping("/getList")
     public ResponseEntity<MessageModel> getListData() {
         MessageModel msg = new MessageModel();
         try {
-            List<Films> data = (List<Films>) filmsRepository.findAll();
+            List<Schedule> data = (List<Schedule>) scheduleRepository.findAll();
 
             msg.setStatus(true);
             msg.setMessage("Success to get all data..");
@@ -155,7 +159,7 @@ public class FilmsController {
         }
     }
 
-    // Get Data Pagination From films
+    // Get Data Pagination From schedule
     @GetMapping("/getPagination")
     public ResponseEntity<MessageModelPagination> getDataPagination(@RequestParam(value = "page",defaultValue = "0") Integer page,
                                                                     @RequestParam(value = "size",defaultValue = "10") Integer size,
@@ -166,7 +170,7 @@ public class FilmsController {
             Sort objSort = sortAscDesc.getSortingData(sort,urutan);
             Pageable pageRequest = objSort == null ? PageRequest.of(page, size) : PageRequest.of(page, size,objSort);
 
-            Page<Films> data = filmsRepository.findAll(pageRequest);
+            Page<Schedule> data = scheduleRepository.findAll(pageRequest);
 
             msg.setStatus(true);
             msg.setMessage("Success to get all data..");
@@ -184,12 +188,12 @@ public class FilmsController {
         }
     }
 
-    // Get Data films By genre_id
-    @GetMapping("/getData/genre/{genreId}")
-    public ResponseEntity<MessageModel> getByGenre(@PathVariable("genreId") String genreId) {
+    // Get Data schedule By film_id
+    @GetMapping("/getData/film/{filmId}")
+    public ResponseEntity<MessageModel> getByFilm(@PathVariable("filmId") String filmId) {
         MessageModel msg = new MessageModel();
         try {
-            List<Films> data = filmsRepository.getByGenre(genreId);
+            List<Schedule> data = scheduleRepository.getByFilm(filmId);
 
             msg.setStatus(true);
             msg.setMessage("Success to get data..");
