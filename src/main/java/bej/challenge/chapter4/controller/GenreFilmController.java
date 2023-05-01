@@ -138,7 +138,7 @@ public class GenreFilmController {
             List<GenreFilm> data = (List<GenreFilm>) genreFilmRepository.findAll();
 
             msg.setStatus(true);
-            msg.setMessage("Success");
+            msg.setMessage("Success to get all data..");
             msg.setData(data);
 
             return ResponseEntity.status(HttpStatus.OK).body(msg);
@@ -163,7 +163,7 @@ public class GenreFilmController {
             Page<GenreFilm> data = genreFilmRepository.findAll(pageRequest);
 
             msg.setStatus(true);
-            msg.setMessage("Success");
+            msg.setMessage("Success to get all data..");
             msg.setData(data.getContent());
             msg.setCurrentPage(data.getNumber());
             msg.setTotalPages(data.getTotalPages());
