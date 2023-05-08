@@ -1,9 +1,9 @@
 package bej.challenge.chapter4.controller;
 
 import bej.challenge.chapter4.model.Booking;
-import bej.challenge.chapter4.model.Schedule;
+import bej.challenge.chapter4.model.Payment;
 import bej.challenge.chapter4.repository.BookingRepository;
-import bej.challenge.chapter4.repository.ScheduleRepository;
+import bej.challenge.chapter4.repository.PaymentRepository;
 import bej.challenge.chapter4.service.SortAscDesc;
 import bej.challenge.chapter4.utils.MessageModel;
 import bej.challenge.chapter4.utils.MessageModelPagination;
@@ -16,57 +16,71 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/booking")
-public class BookingController {
+@RequestMapping("/payment")
+public class PaymentController {
+    @Autowired
+    private PaymentRepository paymentRepository;
+
     @Autowired
     private BookingRepository bookingRepository;
 
     @Autowired
-    private ScheduleRepository scheduleRepository;
-
-    @Autowired
     private SortAscDesc sortAscDesc;
 
-    // Insert Data booking
+    // Insert Data payment
     @PostMapping("/create")
-    public ResponseEntity<MessageModel> insertData(@RequestBody List<Booking> param) {
+    public ResponseEntity<MessageModel> insertData(@RequestBody List<Payment> param) {
         MessageModel msg = new MessageModel();
         try {
-            List<Booking> bookingList = new ArrayList<>();
-            for (Booking data : param) {
-                Booking booking = new Booking();
-                Schedule schedule = scheduleRepository.getById(data.getScheduleId());
+            List<Payment> paymentList = new ArrayList<>();
+            List validasi = new ArrayList();
+            for (Payment data : param) {
+                Payment payment = new Payment();
+                Booking booking = bookingRepository.getById(data.getBookingId());
                 String uuid = UUID.randomUUID().toString();
 
-                booking.setBookingId(uuid);
-                booking.setScheduleId(data.getScheduleId());
-                booking.setUserId(data.getUserId());
-                booking.setNoKursi(data.getNoKursi());
-                booking.setOrderDate(new Date());
-                booking.setJmlTiket(data.getJmlTiket());
-                booking.setTotalHrg(schedule.getHrgTiket().multiply(BigDecimal.valueOf(data.getJmlTiket())));
-                booking.setCreated(new Date());
-                booking.setCreatedBy(data.getCreatedBy());
-                booking.setUpdated(new Date());
-                booking.setUpdatedBy("SYSTEM");
-                booking.setIsactive("Y");
+                // Validasi 1 : pembayaran < total tagihan harga
+                if (data.getTotalPayment().compareTo(booking.getTotalHrg()) < 0) {
+                    validasi.add("Total pembayaran kurang!");
+                }
+                // Validasi 2 : double payment
+                if (booking != null) {
+                    validasi.add("Pembayaran telah dilakukan!");
+                }
 
-                bookingList.add(booking);
+                payment.setPaymentId(uuid);
+                payment.setBookingId(data.getBookingId());
+                payment.setPaymentDate(new Date());
+                payment.setTotalPayment(data.getTotalPayment());
+                payment.setPaymentMethod(data.getPaymentMethod());
+                payment.setStatus("On Process");
+                payment.setCreated(new Date());
+                payment.setCreatedBy(data.getCreatedBy());
+                payment.setUpdated(new Date());
+                payment.setUpdatedBy("SYSTEM");
+                payment.setIsactive("Y");
+
+                paymentList.add(payment);
             }
-            bookingRepository.saveAll(bookingList);
+            if (validasi.size() > 0) {
+                msg.setStatus(false);
+                msg.setMessage(validasi.toString());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            } else {
+                paymentRepository.saveAll(paymentList);
 
-            msg.setStatus(true);
-            msg.setMessage("Success to inserted data..");
-            msg.setData(bookingList);
+                msg.setStatus(true);
+                msg.setMessage("Success to inserted data..");
+                msg.setData(paymentList);
 
-            return ResponseEntity.status(HttpStatus.OK).body(msg);
+                return ResponseEntity.status(HttpStatus.OK).body(msg);
+            }
         } catch (Exception e) {
             msg.setStatus(false);
             msg.setMessage(e.getMessage());
@@ -74,35 +88,46 @@ public class BookingController {
         }
     }
 
-    // Update Data booking
+    // Update Data payment
     @PutMapping("/update")
-    public ResponseEntity<MessageModel> updateData(@RequestBody List<Booking> param) {
+    public ResponseEntity<MessageModel> updateData(@RequestBody List<Payment> param) {
         MessageModel msg = new MessageModel();
         try {
-            List<Booking> bookingList = new ArrayList<>();
-            for (Booking data : param) {
+            List<Payment> paymentList = new ArrayList<>();
+            List validasi = new ArrayList();
+            for (Payment data : param) {
+                Payment payment = paymentRepository.getById(data.getPaymentId());
                 Booking booking = bookingRepository.getById(data.getBookingId());
-                Schedule schedule = scheduleRepository.getById(data.getScheduleId());
 
-                booking.setScheduleId(data.getScheduleId());
-                booking.setUserId(data.getUserId());
-                booking.setNoKursi(data.getNoKursi());
-                booking.setOrderDate(new Date());
-                booking.setJmlTiket(data.getJmlTiket());
-                booking.setTotalHrg(schedule.getHrgTiket().multiply(BigDecimal.valueOf(data.getJmlTiket())));
-                booking.setUpdated(new Date());
-                booking.setUpdatedBy(data.getUpdatedBy());
-                booking.setIsactive(data.getIsactive());
+                // Validasi 1 : pembayaran < total tagihan harga
+                if (data.getTotalPayment().compareTo(booking.getTotalHrg()) < 0) {
+                    validasi.add("Total pembayaran kurang!");
+                }
 
-                bookingList.add(booking);
+                payment.setBookingId(data.getBookingId());
+                payment.setPaymentDate(data.getPaymentDate());
+                payment.setTotalPayment(data.getTotalPayment());
+                payment.setPaymentMethod(data.getPaymentMethod());
+                payment.setStatus(data.getStatus());
+                payment.setUpdated(new Date());
+                payment.setUpdatedBy(data.getUpdatedBy());
+                payment.setIsactive(data.getIsactive());
+
+                paymentList.add(payment);
             }
-            bookingRepository.saveAll(bookingList);
+            if (validasi.size() > 0) {
+                msg.setStatus(false);
+                msg.setMessage(validasi.toString());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            } else {
+                paymentRepository.saveAll(paymentList);
 
-            msg.setStatus(true);
-            msg.setMessage("Success to updated data..");
-            msg.setData(bookingList);
+                msg.setStatus(true);
+                msg.setMessage("Success to updated data..");
+                msg.setData(paymentList);
 
-            return ResponseEntity.status(HttpStatus.OK).body(msg);
+                return ResponseEntity.status(HttpStatus.OK).body(msg);
+            }
         } catch (Exception e) {
             msg.setStatus(false);
             msg.setMessage(e.getMessage());
@@ -110,12 +135,12 @@ public class BookingController {
         }
     }
 
-    // Delete data booking By booking_id
-    @DeleteMapping("/delete/{bookingId}")
-    public ResponseEntity<MessageModel> deleteById(@PathVariable("bookingId") String bookingId) {
+    // Delete data payment By payment_id
+    @DeleteMapping("/delete/{paymentId}")
+    public ResponseEntity<MessageModel> deleteById(@PathVariable("paymentId") String paymentId) {
         MessageModel msg = new MessageModel();
         try {
-            bookingRepository.deleteById(bookingId);
+            paymentRepository.deleteById(paymentId);
 
             msg.setStatus(true);
             msg.setMessage("Success to deleted data..");
@@ -127,12 +152,12 @@ public class BookingController {
         }
     }
 
-    // Get Data booking By booking_id
-    @GetMapping("/getData/{bookingId}")
-    public ResponseEntity<MessageModel> detById(@PathVariable("bookingId") String bookingId) {
+    // Get Data payment By payment_id
+    @GetMapping("/getData/{paymentId}")
+    public ResponseEntity<MessageModel> detById(@PathVariable("paymentId") String paymentId) {
         MessageModel msg = new MessageModel();
         try {
-            Booking data = bookingRepository.getById(bookingId);
+            Payment data = paymentRepository.getById(paymentId);
 
             msg.setStatus(true);
             msg.setMessage("Success to get data..");
@@ -146,12 +171,12 @@ public class BookingController {
         }
     }
 
-    // Get List All Data booking
+    // Get List All Data payment
     @GetMapping("/getList")
     public ResponseEntity<MessageModel> getListData() {
         MessageModel msg = new MessageModel();
         try {
-            List<Booking> data = (List<Booking>) bookingRepository.findAll();
+            List<Payment> data = (List<Payment>) paymentRepository.findAll();
 
             msg.setStatus(true);
             msg.setMessage("Success to get all data..");
@@ -165,7 +190,7 @@ public class BookingController {
         }
     }
 
-    // Get Data Pagination From booking
+    // Get Data Pagination From payment
     @GetMapping("/getPagination")
     public ResponseEntity<MessageModelPagination> getDataPagination(@RequestParam(value = "page",defaultValue = "0") Integer page,
                                                                     @RequestParam(value = "size",defaultValue = "10") Integer size,
@@ -176,7 +201,7 @@ public class BookingController {
             Sort objSort = sortAscDesc.getSortingData(sort,urutan);
             Pageable pageRequest = objSort == null ? PageRequest.of(page, size) : PageRequest.of(page, size,objSort);
 
-            Page<Booking> data = bookingRepository.findAll(pageRequest);
+            Page<Payment> data = paymentRepository.findAll(pageRequest);
 
             msg.setStatus(true);
             msg.setMessage("Success to get all data..");
@@ -194,12 +219,12 @@ public class BookingController {
         }
     }
 
-    // Get Data booking By schedule_id
-    @GetMapping("/getData/schedule/{scheduleId}")
-    public ResponseEntity<MessageModel> getBySchedule(@PathVariable("scheduleId") String scheduleId) {
+    // Get Data payment By booking_id
+    @GetMapping("/getData/booking/{bookingId}")
+    public ResponseEntity<MessageModel> getByBooking(@PathVariable("bookingId") String bookingId) {
         MessageModel msg = new MessageModel();
         try {
-            List<Booking> data = bookingRepository.getBySchedule(scheduleId);
+            List<Payment> data = paymentRepository.getByBooking(bookingId);
 
             msg.setStatus(true);
             msg.setMessage("Success to get data..");
